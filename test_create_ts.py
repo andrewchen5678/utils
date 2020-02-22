@@ -23,7 +23,7 @@ filelist = os.listdir( directory )
 
 
 for file in filelist:
-    print(statx.statx(os.path.join(directory,file)))
+    print(statx.statx(os.path.join(directory,file)).btime)
     continue
     #
     # Get the create time of the file, ONLY TESTED ON MAC
