@@ -23,11 +23,12 @@ filelist = os.listdir( directory )
 
 
 for file in filelist:
-    print(statx.statx(os.path.join(directory,file)).btime)
-    continue
-    #
-    # Get the create time of the file, ONLY TESTED ON MAC
-    create_time = os.stat(os.path.join(directory,file)).st_birthtime
+    if(platform.system()=='Linux'):
+        create_time = statx.statx(os.path.join(directory,file)).btime
+    else:    
+        #
+        # Get the create time of the file, ONLY TESTED ON MAC
+        create_time = os.stat(os.path.join(directory,file)).st_birthtime
     print(create_time)
     # get the readable timestamp format 
     format_time = datetime.datetime.fromtimestamp( create_time )
