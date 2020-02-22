@@ -3,6 +3,9 @@
 import os, datetime
 import argparse
 from shlex import quote
+import platform
+
+import statx
 
 import sys
 
@@ -20,9 +23,12 @@ filelist = os.listdir( directory )
 
 
 for file in filelist:
+    print(statx.statx(os.path.join(directory,file)))
+    continue
+    #
     # Get the create time of the file, ONLY TESTED ON MAC
     create_time = os.stat(os.path.join(directory,file)).st_birthtime
-    #print(create_time)
+    print(create_time)
     # get the readable timestamp format 
     format_time = datetime.datetime.fromtimestamp( create_time )
     
