@@ -7,6 +7,8 @@ import argparse
 from shlex import quote
 
 import sys
+import statx
+import platform
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -93,9 +95,18 @@ should_continue = query_yes_no(f"total number of mp3 files: {total}, type yes to
 if(not should_continue):
     exit(1)
 
+def get_create_time(file):
+    if(platform.system()=='Linux'):
+        create_time = statx.statx(file).btime
+    else:
+        #
+        # Get the create time of the file, ONLY TESTED ON MAC
+        create_time = os.stat(file).st_birthtime
+    return create_time    
+
 for filename, extension,file in mp3s:
     # Get the create time of the file, ONLY TESTED ON MAC
-    create_time = os.stat(file).st_birthtime
+    create_time = get_create_time(file)
     print(create_time)
     # get the readable timestamp format 
     format_time = datetime.datetime.fromtimestamp( create_time )
