@@ -128,7 +128,7 @@ for filename, extension,file in mp3s:
     # rename the file
     os.rename( file,  newfilefull)
 
-    command = 'id3v2 -D {}'.format(quote(newfilefull))
+    command = 'id3convert -s {}'.format(quote(newfilefull))
 
     os.system(command)
 
