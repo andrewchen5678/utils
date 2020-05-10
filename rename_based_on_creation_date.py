@@ -62,6 +62,8 @@ mp3s = []
 # Get a list of files in the directory
 filelist = os.listdir( directory )
 
+dest_directory = os.path.join( directory, "renamed" )
+
 for filerel in filelist:
     file = os.path.join(directory,filerel)
     # split the file into filename and extension
@@ -102,7 +104,9 @@ def get_create_time(file):
         #
         # Get the create time of the file, ONLY TESTED ON MAC
         create_time = os.stat(file).st_birthtime
-    return create_time    
+    return create_time
+
+os.mkdir(dest_directory)
 
 for filename, extension,file in mp3s:
     # Get the create time of the file, ONLY TESTED ON MAC
@@ -124,7 +128,7 @@ for filename, extension,file in mp3s:
     else:
         newfilesDictionary[newfile] = 0
 
-    newfilefull = os.path.join(directory,newfile)
+    newfilefull = os.path.join(dest_directory,newfile)
     # rename the file
     os.rename( file,  newfilefull)
 
