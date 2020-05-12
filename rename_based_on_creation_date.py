@@ -106,7 +106,7 @@ def get_create_time(file):
         create_time = os.stat(file).st_birthtime
     return create_time
 
-os.mkdir(dest_directory)
+os.mkdirs(dest_directory, exist_ok=True)
 
 for filename, extension,file in mp3s:
     # Get the create time of the file, ONLY TESTED ON MAC
