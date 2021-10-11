@@ -94,6 +94,11 @@ should_continue = query_yes_no(f"total number of mp4 files: {total}, type yes to
 if(not should_continue):
     exit(1)
 
+dest_directory = os.path.join( directory, "split" )
+
+
+os.makedirs(dest_directory, exist_ok=True)
+
 
 for filename, extension,file in mp4s:
     # Get the create time of the file, ONLY TESTED ON MAC
@@ -101,7 +106,7 @@ for filename, extension,file in mp4s:
     newfile = filename + "_split" + extension
 
 
-    newfilefull = os.path.join(directory,newfile)
+    newfilefull = os.path.join(dest_directory,newfile)
     # rename the file
     #os.rename( file,  newfilefull)
 
