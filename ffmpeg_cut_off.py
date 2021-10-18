@@ -110,7 +110,7 @@ for filename, extension,file in mp4s:
     # rename the file
     #os.rename( file,  newfilefull)
 
-    command = 'ffmpeg -ss 00:00:06.700 -i {} -acodec copy {}'.format(quote(file),quote(newfilefull))
+    command = 'ffmpeg -ss 00:00:06.700 -i {} -acodec copy -vn {}'.format(quote(file),quote(newfilefull))
 
     os.system(command)
 
