@@ -8,6 +8,7 @@ import platform
 import statx
 
 import sys
+from datetime import datetime, timezone
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--directory', required=True)
@@ -31,7 +32,7 @@ for file in filelist:
         create_time = os.stat(os.path.join(directory,file)).st_birthtime
     print(create_time)
     # get the readable timestamp format 
-    format_time = datetime.datetime.fromtimestamp( create_time )
+    format_time = datetime.fromtimestamp( create_time,timezone.utc)
     
     format_time_string = format_time.strftime("%Y-%m-%d %H:%M:%S")
     print(file,' timestamp:',format_time_string)

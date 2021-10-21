@@ -9,6 +9,7 @@ from shlex import quote
 import sys
 import statx
 import platform
+from datetime import datetime, timezone
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -113,7 +114,7 @@ for filename, extension,file in mp3s:
     create_time = get_create_time(file)
     print(create_time)
     # get the readable timestamp format 
-    format_time = datetime.datetime.fromtimestamp( create_time )
+    format_time = datetime.fromtimestamp( create_time,timezone.utc)
     # convert time into string
     #format_time_string = format_time.strftime("%Y-%m-%d %H.%M.%S") # e.g. 2015-01-01 09.00.00.jpg
     format_time_string = format_time.strftime("%Y-%m-%d_%H_%M_%S") # e.g. 2015-01-01 09.00.00.jpg
