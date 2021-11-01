@@ -12,7 +12,7 @@ data = None
 
 def get_youtube_dl_with_default_options(options):
     dl_proxy = sys.argv[1]
-    print(sys.argv)
+    #print(sys.argv)
     parsed_url = urlparse(dl_proxy)
     #print(parsed_url)
     if(parsed_url.scheme!='socks5'):
@@ -41,7 +41,7 @@ for item in video_list['entries']:
         exclude_ids.add(cur_id)
         continue
 
-    if cur_id == after_video_id:
+    if after_video_id and cur_id == after_video_id:
         exclude_ids.add(cur_id)
         skip_rest = True # skip everything after that to prevent accidental download if id is removed for some reason
         continue
@@ -52,7 +52,7 @@ for item in video_list['entries']:
 
 print(json.dumps(video_list_new,indent=2))
 
-new_after_id = after_video_id
+new_after_id = None
 has_failed = False
 
 for item in reversed(video_list_new):

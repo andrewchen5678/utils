@@ -14,7 +14,7 @@ create `youtube_conf.json`:
 ```json
 {
   "playlist_id": "playlistid",
-  "after_video_id": "youtubevideoid",
+  "after_video_id": "youtubevideoid", // will be removed after first successful run
   "exclude_ids": [
   ]
 }
