@@ -29,7 +29,6 @@ if [ $status -eq 0 ]; then
     export PS1="(ipfs) \h:\W \u\$ "
   fi
 
- 	export PS1="(ipfs) $PS1"
 else 
 	echo "ipfs path invalid"
 	exit 1
