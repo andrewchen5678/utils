@@ -45,7 +45,7 @@ for item in video_list['entries']:
 
     if after_video_id and cur_id == after_video_id:
         exclude_ids.add(cur_id)
-        skip_rest = True # skip everything after that to prevent accidental download if id is removed for some reason
+        skip_rest = True # skip everything after that
         continue
 
     if cur_id in exclude_ids: # skip
@@ -54,8 +54,6 @@ for item in video_list['entries']:
 
 print(json.dumps(video_list_new,indent=2))
 
-new_after_id = None
-has_failed = False
 
 for item in reversed(video_list_new):
     new_id = item['id']
@@ -64,13 +62,9 @@ for item in reversed(video_list_new):
     result = subprocess.run(
         get_youtube_dl_with_default_options(['-f', '140', 'https://www.youtube.com/watch?v='+new_id]), shell=False)
     if result.returncode == 0:
-        if not has_failed:
-            new_after_id = new_id
         exclude_ids.add(new_id) # exclude success ones for the future
-    else:
-        has_failed = True # current one failed, don't increase new_after_id anymore
 
-data['after_video_id'] = new_after_id
+data['after_video_id'] = None
 data['exclude_ids'] = sorted(exclude_ids)
 
 with open(os.path.join(cur_dir,'youtube_conf_new.json'),'w') as f:

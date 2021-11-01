@@ -14,7 +14,9 @@ create `youtube_conf.json`:
 ```json
 {
   "playlist_id": "playlistid",
-  "after_video_id": "youtubevideoid", // will be removed after first successful run
+  // will be removed after successful run, it must exists 
+  // for the first run otherwise will try to download the whole list 
+  "after_video_id": "youtubevideoid", 
   "exclude_ids": [
   ]
 }
