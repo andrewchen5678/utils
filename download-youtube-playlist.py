@@ -17,7 +17,7 @@ def get_youtube_dl_with_default_options(options):
     #print(parsed_url)
     if(parsed_url.scheme!='socks5'):
         raise ValueError('need to pass socks5://host:port')
-    return ['youtube-dl','--proxy', '-v', dl_proxy ]+options
+    return ['youtube-dl', '-v', '--proxy', dl_proxy ]+options
 
 
 with open(os.path.join(cur_dir,'youtube_conf.json'),'r') as f:
@@ -27,7 +27,9 @@ playlist_id = data['playlist_id']
 after_video_id = data['after_video_id']
 exclude_ids = set(data['exclude_ids'])
 
-result = subprocess.run(get_youtube_dl_with_default_options([ '--flat-playlist', '-J', 'https://www.youtube.com/playlist?list='+playlist_id]), shell=False, check=True, capture_output=True)
+result = subprocess.run(get_youtube_dl_with_default_options(['--flat-playlist', '-J', 'https://www.youtube.com/playlist?list='+playlist_id]), shell=False, check=False, capture_output=True)
+if result.returncode != 0:
+    raise ValueError(result.stderr)
 video_list = json.loads(result.stdout)
 
 skip_rest = False
@@ -58,8 +60,7 @@ for item in reversed(video_list_new):
     #if(new_id=='8giATJyk2lM'): # test failure
     #    new_id = 'nosirvechafa'
     result = subprocess.run(
-        get_youtube_dl_with_default_options(['-f', '140', new_id]), shell=False,
-        check=False)
+        get_youtube_dl_with_default_options(['-f', '140', new_id]), shell=False)
     if result.returncode == 0:
         if not has_failed:
             new_after_id = new_id
@@ -68,7 +69,7 @@ for item in reversed(video_list_new):
         has_failed = True # current one failed, don't increase new_after_id anymore
 
 data['after_video_id'] = new_after_id
-data['exclude_ids'] = list(exclude_ids)
+data['exclude_ids'] = sorted(exclude_ids)
 
 with open(os.path.join(cur_dir,'youtube_conf_new.json'),'w') as f:
     json.dump(data,f,indent=2)
