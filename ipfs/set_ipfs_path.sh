@@ -20,7 +20,16 @@ status=$?
 if [ $status -eq 0 ]; then
  	echo "command was successful"
  	export IPFS_PATH="$patharg"
- 	export PS1="(ipfs) \h:\W \u\$ "
+ 	if [ ! -n "$BASH" ] ; then
+ 	  # not running bash
+ 	  #  echo Please run this script $0 with bash; exit 1;
+    export PS1="(ipfs) $PS1"
+  else
+    # running bash
+    export PS1="(ipfs) \h:\W \u\$ "
+  fi
+
+ 	export PS1="(ipfs) $PS1"
 else 
 	echo "ipfs path invalid"
 	exit 1
