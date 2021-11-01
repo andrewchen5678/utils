@@ -17,7 +17,9 @@ def get_youtube_dl_with_default_options(options):
     #print(parsed_url)
     if(parsed_url.scheme!='socks5'):
         raise ValueError('need to pass socks5://host:port')
-    return ['youtube-dl', '-v', '--proxy', dl_proxy ]+options
+    cmd = ['youtube-dl', '-v', '--proxy', dl_proxy ]+options
+    print(cmd)
+    return cmd
 
 
 with open(os.path.join(cur_dir,'youtube_conf.json'),'r') as f:
@@ -60,7 +62,7 @@ for item in reversed(video_list_new):
     #if(new_id=='8giATJyk2lM'): # test failure
     #    new_id = 'nosirvechafa'
     result = subprocess.run(
-        get_youtube_dl_with_default_options(['-f', '140', new_id]), shell=False)
+        get_youtube_dl_with_default_options(['-f', '140', 'https://www.youtube.com/watch?v='+new_id]), shell=False)
     if result.returncode == 0:
         if not has_failed:
             new_after_id = new_id
