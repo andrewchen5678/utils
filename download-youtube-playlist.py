@@ -17,7 +17,7 @@ def get_youtube_dl_with_default_options(options):
     #print(parsed_url)
     if(parsed_url.scheme!='socks5'):
         raise ValueError('need to pass socks5://host:port')
-    cmd = ['youtube-dl', '-v', '--proxy', dl_proxy ]+options
+    cmd = ['yt-dlp', '-v', '--proxy', dl_proxy ]+options
     print(cmd)
     return cmd
 
