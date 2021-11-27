@@ -29,7 +29,7 @@ def download_fixed_m4a(url,dl_proxy):
         'format': '140',
         'proxy':dl_proxy,
         'verbose': True,
-        'progress_template': {
+        'outtmpl': {
             'default':'%(title).75s [%(id)s].%(ext)s',
         },
         'postprocessors': [{
