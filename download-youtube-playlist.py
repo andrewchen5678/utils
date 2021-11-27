@@ -5,69 +5,112 @@ import json
 import subprocess
 import sys
 from urllib.parse import urlparse
+from yt_dlp import YoutubeDL
+import yt_dlp
+import pprint
+
+from yt_dlp.postprocessor.common import PostProcessor
 
 cur_dir = os.getcwd()
 
 data = None
 
-def get_youtube_dl_with_default_options(options):
+# ℹ️ See the docstring of yt_dlp.postprocessor.common.PostProcessor
+class FFmpegFixupCloudFlare(yt_dlp.postprocessor.ffmpeg.FFmpegFixupPostProcessor):
+    @PostProcessor._restrict_to(images=False, video=False)
+    def run(self, info):
+        if info.get('container') == 'm4a_dash':
+            self._fixup('clean up so that cloudflare ipfs doesnt complaint', info['filepath'], [
+                '-vn', '-c:a', 'copy', '-movflags', '+faststart'])
+        return [], info
+
+def download_fixed_m4a(url,dl_proxy):
+    ydl_opts = {
+        'format': '140',
+        'proxy':dl_proxy,
+        'verbose': True,
+        'progress_template': {
+            'default':'%(title).75s [%(id)s].%(ext)s',
+        },
+        'postprocessors': [{
+            # Embed metadata in video using ffmpeg.
+            # ℹ️ See yt_dlp.postprocessor.FFmpegMetadataPP for the arguments it accepts
+            'key': 'FFmpegMetadata',
+            #'add_chapters': True,
+            'add_metadata': True,
+        }],
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.add_post_processor(FFmpegFixupCloudFlare())
+        ydl.download([url])
+
+def list_playlist(url,dl_proxy):
+    ydl_opts = {
+        'proxy':dl_proxy,
+        'quiet': True,
+        'dump_single_json': True,
+        'extract_flat': True,
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        return ydl.extract_info(url)
+
+if __name__ == "__main__":
+    #download_fixed_m4a('https://www.youtube.com/watch?v=UvPit5rTDQc')
+    #exit(0)
     dl_proxy = sys.argv[1]
     #print(sys.argv)
     parsed_url = urlparse(dl_proxy)
     #print(parsed_url)
     if(parsed_url.scheme!='socks5'):
         raise ValueError('need to pass socks5://host:port')
-    cmd = ['yt-dlp', '--add-metadata', '-o', '%(title).75s [%(id)s].%(ext)s', '-v', '--proxy', dl_proxy ]+options
-    print(cmd)
-    return cmd
+    with open(os.path.join(cur_dir,'youtube_conf.json'),'r') as f:
+         data = json.load(f)
+
+    playlist_id = data['playlist_id']
+    after_video_id = data['after_video_id']
+    exclude_ids = set(data['exclude_ids'])
+
+    video_list = list_playlist(url='https://www.youtube.com/playlist?list='+playlist_id,dl_proxy=dl_proxy)
+
+    #print(video_list['entries'][0])
+    #exit(0)
+
+    skip_rest = False
+
+    video_list_new = []
+    for item in video_list['entries']:
+        cur_id = item['id']
+        if skip_rest:
+            exclude_ids.add(cur_id)
+            continue
+
+        if after_video_id and cur_id == after_video_id:
+            exclude_ids.add(cur_id)
+            skip_rest = True # skip everything after that
+            continue
+
+        if cur_id in exclude_ids: # skip
+            continue
+        video_list_new.append(item)
+
+    print(json.dumps(video_list_new,indent=2))
 
 
-with open(os.path.join(cur_dir,'youtube_conf.json'),'r') as f:
-    data = json.load(f)
+    for item in reversed(video_list_new):
+        new_id = item['id']
+        try:
+            returncode = download_fixed_m4a('https://www.youtube.com/watch?v='+new_id,dl_proxy)
+            if returncode == 0:
+                exclude_ids.add(new_id) # exclude success ones for the future
+        except yt_dlp.utils.DownloadError as e:
+            pass        
 
-playlist_id = data['playlist_id']
-after_video_id = data['after_video_id']
-exclude_ids = set(data['exclude_ids'])
+    data['after_video_id'] = None
+    data['exclude_ids'] = sorted(exclude_ids)
 
-result = subprocess.run(get_youtube_dl_with_default_options(['--flat-playlist', '-J', 'https://www.youtube.com/playlist?list='+playlist_id]), shell=False, check=False, capture_output=True)
-if result.returncode != 0:
-    raise ValueError(result.stderr)
-video_list = json.loads(result.stdout)
+    print('updating config',file=sys.stderr)
 
-skip_rest = False
+    with open(os.path.join(cur_dir,'youtube_conf_new.json'),'w') as f:
+        json.dump(data,f,indent=2)
 
-video_list_new = []
-for item in video_list['entries']:
-    cur_id = item['id']
-    if skip_rest:
-        exclude_ids.add(cur_id)
-        continue
-
-    if after_video_id and cur_id == after_video_id:
-        exclude_ids.add(cur_id)
-        skip_rest = True # skip everything after that
-        continue
-
-    if cur_id in exclude_ids: # skip
-        continue
-    video_list_new.append(item)
-
-print(json.dumps(video_list_new,indent=2))
-
-
-for item in reversed(video_list_new):
-    new_id = item['id']
-    #if(new_id=='8giATJyk2lM'): # test failure
-    #    new_id = 'nosirvechafa'
-    result = subprocess.run(
-        get_youtube_dl_with_default_options(['-f', '140', 'https://www.youtube.com/watch?v='+new_id]), shell=False)
-    if result.returncode == 0:
-        exclude_ids.add(new_id) # exclude success ones for the future
-
-data['after_video_id'] = None
-data['exclude_ids'] = sorted(exclude_ids)
-
-with open(os.path.join(cur_dir,'youtube_conf_new.json'),'w') as f:
-    json.dump(data,f,indent=2)
-
-os.rename(os.path.join(cur_dir,'youtube_conf_new.json'),os.path.join(cur_dir,'youtube_conf.json'))
+    os.rename(os.path.join(cur_dir,'youtube_conf_new.json'),os.path.join(cur_dir,'youtube_conf.json'))
