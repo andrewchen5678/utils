@@ -112,7 +112,7 @@ if __name__ == "__main__":
     data['after_video_id'] = None
     data['exclude_ids'] = sorted(exclude_ids)
 
-    logging.info('updating config',file=sys.stderr)
+    logging.info('updating config')
 
     with open(os.path.join(cur_dir,'youtube_conf_new.json'),'w') as f:
         json.dump(data,f,indent=2)
