@@ -8,6 +8,9 @@ from urllib.parse import urlparse
 from yt_dlp import YoutubeDL
 import yt_dlp
 import pprint
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 from yt_dlp.postprocessor.common import PostProcessor
 
@@ -42,7 +45,7 @@ def download_fixed_m4a(url,dl_proxy):
     }
     with YoutubeDL(ydl_opts) as ydl:
         ydl.add_post_processor(FFmpegFixupCloudFlare())
-        ydl.download([url])
+        return ydl.download([url])
 
 def list_playlist(url,dl_proxy):
     ydl_opts = {
@@ -58,7 +61,7 @@ if __name__ == "__main__":
     #download_fixed_m4a('https://www.youtube.com/watch?v=UvPit5rTDQc')
     #exit(0)
     dl_proxy = sys.argv[1]
-    #print(sys.argv)
+    #logging.info(sys.argv)
     parsed_url = urlparse(dl_proxy)
     #print(parsed_url)
     if(parsed_url.scheme!='socks5'):
@@ -93,7 +96,7 @@ if __name__ == "__main__":
             continue
         video_list_new.append(item)
 
-    print(json.dumps(video_list_new,indent=2))
+    #print(json.dumps(video_list_new,indent=2))
 
 
     for item in reversed(video_list_new):
@@ -101,6 +104,7 @@ if __name__ == "__main__":
         try:
             returncode = download_fixed_m4a('https://www.youtube.com/watch?v='+new_id,dl_proxy)
             if returncode == 0:
+                logging.info(f'excluding {new_id} from future dl')
                 exclude_ids.add(new_id) # exclude success ones for the future
         except yt_dlp.utils.DownloadError as e:
             pass        
@@ -108,7 +112,7 @@ if __name__ == "__main__":
     data['after_video_id'] = None
     data['exclude_ids'] = sorted(exclude_ids)
 
-    print('updating config',file=sys.stderr)
+    logging.info('updating config',file=sys.stderr)
 
     with open(os.path.join(cur_dir,'youtube_conf_new.json'),'w') as f:
         json.dump(data,f,indent=2)
