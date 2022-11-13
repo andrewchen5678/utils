@@ -64,7 +64,7 @@ files = []
 # Get a list of files in the directory
 filelist = os.listdir( directory )
 
-dest_directory = os.path.join( directory, "renamed" )
+dest_directory = directory
 
 for filerel in filelist:
     file = os.path.join(directory,filerel)
